@@ -60,7 +60,7 @@ const run = () => {
     asset: 'DOGE',
     base: 'USDT',
     allocation: 0.4, // Percentage of our available funds that we trade
-    spread: 0.04, // Percentage above and below market prices for sell and buy orders
+    spread: 0.02, // Percentage above and below market prices for sell and buy orders
     tickInterval: 10000, // Duration between each tick, in milliseconds
   };
   const binanceClient = new ccxt.binance({
@@ -71,4 +71,4 @@ const run = () => {
   setInterval(tick, config.tickInterval, config, binanceClient);
 };
 
-run();
+// run();
