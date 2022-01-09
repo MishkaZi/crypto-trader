@@ -28,8 +28,8 @@ const tick = async (config, binanceClient) => {
   const sellPrice = marketPrice * (1 + spread);
   const buyPrice = marketPrice * (1 - spread);
   const balances = await binanceClient.fetchBalance();
-  const assetBalance = balances.free[asset]; // e.g. 0.01 ONE
-  const baseBalance = balances.free[base]; // e.g. 20 USDT
+  const assetBalance = balances.free[asset];
+  const baseBalance = balances.free[base];
   const sellVolume = assetBalance * allocation;
   const buyVolume = (baseBalance * allocation) / marketPrice;
 
@@ -40,7 +40,7 @@ const tick = async (config, binanceClient) => {
   } catch (error) {
     console.log(error);
   }
-
+  console.log('Market price: ' + marketPrice);
   console.log('Asset balance: ' + assetBalance);
   console.log('Base balance: ' + baseBalance);
 
