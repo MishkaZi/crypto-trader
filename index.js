@@ -10,25 +10,25 @@ const tick = async (config, binanceClient) => {
   // Cancel open orders left from previou tick, if any
   const orders = await binanceClient.fetchOpenOrders(market);
   orders.forEach(async (order) => {
-    await binanceClient.cancelOrder(order.id, 'DOGE/USDT');
+    await binanceClient.cancelOrder(order.id, 'ONE/USDT');
   });
 
   // Fetch current market prices
   const results = await Promise.all([
     axios.get(
-      'https://api.coingecko.com/api/v3/simple/price?ids=dogecoin&vs_currencies=usd'
+      'https://api.coingecko.com/api/v3/simple/price?ids=harmony&vs_currencies=usd'
     ),
     axios.get(
       'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd'
     ),
   ]);
-  const marketPrice = results[0].data.dogecoin.usd / results[1].data.tether.usd;
+  const marketPrice = results[0].data.harmony.usd / results[1].data.tether.usd;
 
   // Calculate new orders parameters
   const sellPrice = marketPrice * (1 + spread);
   const buyPrice = marketPrice * (1 - spread);
   const balances = await binanceClient.fetchBalance();
-  const assetBalance = balances.free[asset]; // e.g. 0.01 DOGE
+  const assetBalance = balances.free[asset]; // e.g. 0.01 ONE
   const baseBalance = balances.free[base]; // e.g. 20 USDT
   const sellVolume = assetBalance * allocation;
   const buyVolume = (baseBalance * allocation) / marketPrice;
@@ -48,19 +48,19 @@ const tick = async (config, binanceClient) => {
     New tick for ${market}...
     Created limit sell order for ${sellVolume.toFixed(
       3
-    )} DOGE coins for ${sellPrice.toFixed(3)} each  
+    )} ONE coins for ${sellPrice.toFixed(3)} each  
     Created limit buy  order for ${buyVolume.toFixed(
       3
-    )} DOGE coins for ${buyPrice.toFixed(3)} each 
+    )} ONE coins for ${buyPrice.toFixed(3)} each 
   `);
 };
 
 const run = () => {
   const config = {
-    asset: 'DOGE',
+    asset: 'ONE',
     base: 'USDT',
     allocation: 0.4, // Percentage of our available funds that we trade
-    spread: 0.02, // Percentage above and below market prices for sell and buy orders
+    spread: 0.07, // Percentage above and below market prices for sell and buy orders
     tickInterval: 10000, // Duration between each tick, in milliseconds
   };
   const binanceClient = new ccxt.binance({
@@ -71,4 +71,4 @@ const run = () => {
   setInterval(tick, config.tickInterval, config, binanceClient);
 };
 
-// run();
+run();
