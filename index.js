@@ -3,6 +3,9 @@ import ccxt from 'ccxt';
 import axios from 'axios';
 dotenv.config();
 
+let sold = false;
+let bought = false;
+
 const tick = async (config, binanceClient) => {
   const { asset, base, spread, allocation } = config;
   const market = `${asset}/${base}`;
@@ -22,33 +25,45 @@ const tick = async (config, binanceClient) => {
       'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd'
     ),
   ]);
+
+  const currentMarketPrice =
+    results[0].data.harmony.usd / results[1].data.tether.usd;
+
   const marketPrice = results[0].data.harmony.usd / results[1].data.tether.usd;
 
   // Calculate new orders parameters
-  const sellPrice = marketPrice * (1 + spread);
-  const buyPrice = marketPrice * (1 - spread);
+  const sellPrice = currentMarketPrice * (1 + spread);
+  const buyPrice = currentMarketPrice * (1 - spread);
   const balances = await binanceClient.fetchBalance();
   const assetBalance = balances.free[asset];
   const baseBalance = balances.free[base];
   const sellVolume = assetBalance * allocation;
-  const buyVolume = (baseBalance * allocation) / marketPrice;
+  const buyVolume = (baseBalance * allocation) / currentMarketPrice;
 
   //Send orders
   try {
+    //Sell limit
     await binanceClient.createLimitSellOrder(market, sellVolume, sellPrice);
+
+    //Buy order
     await binanceClient.createLimitBuyOrder(market, buyVolume, buyPrice);
   } catch (error) {
     console.log(error);
   }
-  console.log('Market price: ' + marketPrice);
+  console.log('Current market price: ' + currentMarketPrice);
   console.log('Asset balance: ' + assetBalance);
   console.log('Base balance: ' + baseBalance);
 
   console.log(`
-    New tick for ${market}...
+    New tick for sell ${market}...
     Created limit sell order for ${sellVolume.toFixed(
       3
     )} ONE coins for ${sellPrice.toFixed(3)} each  
+
+  `);
+
+  console.log(`
+    New tick for buy ${market}...
     Created limit buy  order for ${buyVolume.toFixed(
       3
     )} ONE coins for ${buyPrice.toFixed(3)} each 
@@ -71,4 +86,4 @@ const run = () => {
   setInterval(tick, config.tickInterval, config, binanceClient);
 };
 
-run();
+// run();
