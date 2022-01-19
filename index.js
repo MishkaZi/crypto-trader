@@ -35,6 +35,11 @@ const tick = async (config, binanceClient) => {
     marketPrice = currentMarketPrice;
   }
 
+  //If there is less than 15$ of assets left, block sell option
+  if (currentMarketPrice * assetBalance <= 15) {
+    sold = true;
+  }
+
   // Calculate new orders parameters
   const sellPrice = marketPrice * (1 + spread);
   const buyPrice = marketPrice * (1 - spread);
@@ -113,4 +118,4 @@ const run = () => {
   setInterval(tick, config.tickInterval, config, binanceClient);
 };
 
-run();
+// run();
